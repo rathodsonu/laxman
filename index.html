@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voice Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #e0f7fa, #ffffff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding: 30px;
+    }
+
+    h1 {
+      color: #00796b;
+      margin-bottom: 20px;
+    }
+
+    #status {
+      font-size: 16px;
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    button {
+      background-color: #009688;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #00796b;
+      transform: scale(1.05);
+    }
+
+    #log {
+      margin-top: 30px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 15px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 350px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .log-entry {
+      margin: 10px 0;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .assistant {
+      background-color: #e8f5e9;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .user {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196F3;
+    }
+
+    .mic-icon {
+      margin-right: 10px;
+    }
+
+    .loading {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Voice Assistant</h1>
+  <div id="status"><i class="fas fa-circle-notch loading"></i> Idle</div>
+  <button onclick="startAssistant()"><i class="fas fa-microphone mic-icon"></i> Start Assistant</button>
+  <div id="log"></div>
+  <!-- AI Question Input -->
+<div style="margin-top: 30px; text-align: center;">
+  <input type="text" id="question" placeholder="Ask something to AI" 
+         style="padding: 10px; width: 70%; max-width: 600px; border-radius: 20px; border: 1px solid #ccc; font-size: 16px;" />
+  <button onclick="askAI()" style="margin-top: 10px;"><i class="fas fa-robot"></i> Ask AI</button>
+</div>
+
+
+  <script>
+    function startAssistant() {
+      document.getElementById('status').innerHTML = '<i class="fas fa-circle-notch loading"></i> Starting...';
+      fetch('/start-assistant')
+        .then(response => response.text())
+        .then(data => {
+          appendLog(data, 'assistant');
+          document.getElementById('status').innerHTML = '<i class="fas fa-microphone"></i> Listening... Say "Hello ravan"';
+        });
+    }
+
+    function appendLog(entry, type) {
+      const logDiv = document.getElementById('log');
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry ' + type;
+      logEntry.innerHTML = entry;
+      logDiv.appendChild(logEntry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    async function askAI() {
+  const question = document.getElementById("question").value;
+  if (!question.trim()) return;
+
+  appendLog("You: " + question, "user");
+
+  document.getElementById("status").innerHTML = '<i class="fas fa-circle-notch loading"></i> Thinking...';
+
+  const res = await fetch("/ask-ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ question })
+  });
+
+  const data = await res.json();
+  appendLog("AI: " + data.response, "assistant");
+
+  document.getElementById("status").innerHTML = '<i class="fas fa-microphone"></i> Listening... Say "Hello Laxman"';
+}
+
+  </script>
+</body>
+</html>
